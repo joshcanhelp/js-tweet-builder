@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+
+	<title>Tweet Builder</title>
+
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/main.css">
+
+
+</head>
+<body>
+
+<div class="container">
+	<h1>SMT Tweet Builder</h1>
+	<ul>
+		<li>Enter your tweet text and your URL, both of which are required.</li>
+		<li>You can add a via name and a hashtag, if desired (no leading character is needed).</li>
+		<li>Your character count is recalculated as you move from field to field (you can use the
+	<strong>[Tab]</strong> key to skip between them).</li>
+		<li>Once you have your fields set, click <strong>generate</strong> to build your tweet. The tweet will not
+		generate if you're over the character count.</li>
+		<li>The tweets generated should be able to be copied and pasted into a spreadsheet.</li>
+	</ul>
+	<form id="tweet_builder">
+		<span id="char_count">0</span>
+		<fieldset>
+			<label for="tweet">Text <strong>*</strong></label>
+			<textarea name="tweet" id="tweet" tabindex="1" required></textarea>
+
+			<label for="url">URL <strong>*</strong></label>
+			<input type="url" name="url" id="url" tabindex="2" required>
+
+			<label for="via">Via</label>
+			<input type="text" name="via" id="via" tabindex="3">
+
+			<label for="hashtag">Hashtag</label>
+			<input type="text" name="hashtag" id="hashtag" tabindex="4">
+			<br><br>
+			<button type="submit" class="btn btn-success" id="btn_generate">generate</button>
+		</fieldset>
+	</form>
+
+	<table class="table" id="all_tweets">
+		<tbody>
+			<tr>
+				<th><h3>Tweets</h3></th>
+			</tr>
+		</tbody>
+	</table>
+
+</div>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+
+</body>
+</html>
