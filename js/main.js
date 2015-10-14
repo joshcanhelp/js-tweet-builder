@@ -1,33 +1,32 @@
+/* global alert */
+
 /*
-Tweet Builder by PROPER Development
-http://theproperweb.com
+Tweet Builder by Josh Can Help
+http://www.joshcanhelp.com
  */
 
- // bit.ly
+if (typeof String.prototype.trim === 'undefined') {
 
-// UTM variables added to the URL automatically
-var smtUtmSource = 'hootsuite';
-var smtUtmMedium = 'twitter';
-var smtUtmCampaign = 'hootsuite_tweets';
-
-// How many chars are added by default?
-var charsUrl = 21;
-var charsVia = 6;
-var charsHash = 2;
-
-// Total tweets created
-var smtTweetCount = 0;
-
-// Running character count
-var smtCharCount = 0;
-
-if (typeof String.prototype.trim === undefined) {
     String.prototype.trim = function () {
+        'use strict';
+
         return this.replace(/^\s+|\s+$/g, '');
     };
+
 }
 
-$(document).ready( function ($) {
+jQuery(document).ready( function ($) {
+    'use strict';
+
+    // UTM variables added to the URL automatically
+    var utmSource = 'social';
+    var utmMedium = 'twitter';
+    var utmCampaign = 'twitter-tweets';
+
+    // How many chars are added by default?
+    var charsUrl = 22;
+    var charsVia = 6;
+    var charsHash = 2;
 
     // Global character count
     var theButton = $('#btn_generate');
@@ -41,8 +40,24 @@ $(document).ready( function ($) {
     var objVia = $('#via');
     var objHash = $('#hashtag');
 
+    objTweet.keyup(function () {
+        recalcCount();
+    });
+
+    objUrl.keyup( function() {
+        recalcCount();
+    });
+
+    objVia.keyup(event, function () {
+        recalcCount();
+    });
+
+    objHash.keyup(event, function () {
+        recalcCount();
+    });
+
     // Grab forum submission to build the tweet
-    $('#tweet_builder').submit( function(event) {
+    $('#tweet_builder').submit(function (event) {
         event.preventDefault();
 
         // Don't want the form submitted multiple times
@@ -50,74 +65,35 @@ $(document).ready( function ($) {
             return false;
         }
 
-        smtButtonState(false);
+        buttonState(false);
 
-        // Grab the URL field and process the tweet
-        smtUrl = objUrl.val();
-        smtProcessTweet(smtUrl);
+        processTweet(objUrl.val());
 
     });
 
-    objTweet.change(function () {
-        smtRecalcCount($(this), 0);
-    })
+    function recalcCount() {
 
-    objUrl.change( function() {
-        smtRecalcCount($(this), charsUrl);
-    })
+        var newCount =
+            objTweet.val().length +
+            ( objUrl.val().length ? charsUrl : 0 ) +
+            ( objVia.val().length ? objVia.val().length + charsVia : 0 ) +
+            ( objHash.val().length ? objHash.val().length + charsHash : 0 );
 
-    objVia.change(event, function () {
-        smtRecalcCount( $(this), charsVia);
-    })
-
-    objHash.change(event, function () {
-        smtRecalcCount( $(this), charsHash);
-    });
-
-    function smtRecalcCount(field, addThis) {
-
-        // Storing the current value to use next time around as the old value
-        field.data('old', field.data('new') || '');
-
-        // Since we're using inputs and areas, get the highest/only count
-        var currentValue = field.val() > field.text() ? field.val() : field.text();
-
-        // URLs are shortened so we don't need to include their length
-        if (field.attr('type') !== 'url') {
-            smtCharCount = smtCharCount - field.data('old').length;
-        }
-
-        if (currentValue) {
-            // URLs are shortened so we don't need to include their length
-            if (field.attr('type') !== 'url') {
-                smtCharCount = smtCharCount + currentValue.length;
-            }
-
-            // Add additional characters if the value was empty but is not now
-            if (!field.data('old').length) {
-                smtCharCount = smtCharCount + addThis;
-            }
-        } else {
-            smtCharCount = smtCharCount - addThis;
-        }
-
-        field.data('new', field.val());
-
-        smtChangeCount(smtCharCount);
+        changeCount(newCount);
     }
 
-    function smtProcessTweet(long_url) {
+    function processTweet(long_url) {
 
         if (long_url.indexOf('?') >= 0) {
-            long_url = long_url.trim() + '&'
+            long_url = long_url.trim() + '&';
         } else {
-            long_url = long_url.trim() + '?'
+            long_url = long_url.trim() + '?';
         }
 
         long_url = long_url +
-            'utm_source=' + smtUtmSource +
-            '&utm_medium=' + smtUtmMedium +
-            '&utm_campaign=' + smtUtmCampaign;
+            'utm_source=' + utmSource +
+            '&utm_medium=' + utmMedium +
+            '&utm_campaign=' + utmCampaign;
 
         $.ajax({
             dataType:'json',
@@ -131,60 +107,54 @@ $(document).ready( function ($) {
                 longUrl:encodeURI(long_url)
             }
         }).done(function (response) {
-                if (response.data.url !== undefined)
-                    smtBuiltTweet(response.data.url);
-                else
-                    console.log('bit.ly failed');
-            });
+            if (response.data.url !== undefined) {
+                buildTweet(response.data.url);
+            } else {
+                alert('bit.ly failed');
+            }
+        });
 
     }
 
-    function smtBuiltTweet(shortUrl) {
+    function buildTweet(shortUrl) {
 
-        var smtTweet = objTweet.val() + ' ' + shortUrl;
+        var theTweet = objTweet.val() + ' ' + shortUrl;
 
-        var smtVia = objVia.val();
-        if (smtVia !== undefined && smtVia.length) {
-            smtTweet = smtTweet + ' via @' + smtVia;
+        var tweetVia = objVia.val();
+        if (tweetVia !== undefined && tweetVia.length) {
+            theTweet = theTweet + ' via @' + tweetVia;
         }
 
-        var smtHash = objHash.val();
-        if (smtHash !== undefined && smtHash.length) {
-            smtTweet = smtTweet + ' #' + smtHash;
+        var tweetHash = objHash.val();
+        if (tweetHash !== undefined && tweetHash.length) {
+            theTweet = theTweet + ' #' + tweetHash;
         }
-
-        smtTweetCount++;
 
         // Zero out all counts
-        objTweet.val('').removeData('old').removeData('new');
-        objUrl.val('').removeData('old').removeData('new');
-        objVia.val('').removeData('old').removeData('new');
-        objHash.val('').removeData('old').removeData('new');
-        smtChangeCount(0);
-        smtCharCount = 0;
+        changeCount(0);
 
         // Display the tweet in a table to make copy/paste easy
-        $('#all_tweets').find('tbody').append('<tr><td>' + smtTweet + '</td></tr>');
+        $('#all_tweets').find('tbody').append('<tr><td>' + theTweet + '</td></tr>');
 
         // Reactivate the button
-        smtButtonState(true);
+        buttonState(true);
     }
 
-    function smtChangeCount(count) {
+    function changeCount(count) {
 
         theCount.text(count);
 
         if (count > 140) {
             theCount.css('color', 'red');
-            smtButtonState(false);
+            buttonState(false);
         } else {
             theCount.css('color', 'green');
-            smtButtonState(true);
+            buttonState(true);
         }
 
     }
 
-    function smtButtonState(active) {
+    function buttonState(active) {
         if (active) {
             theButton.removeClass('btn-inactive').addClass('btn-success');
         } else {
